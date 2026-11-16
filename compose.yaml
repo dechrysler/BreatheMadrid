@@ -1,0 +1,12 @@
+services:
+  fuseki:
+    build:
+      context: .
+      dockerfile: Dockerfile.fuseki
+    ports:
+      - "3030:3030"
+    volumes:
+      # The linked Turtle graph already contains the 24 stations, 11 pollutants
+      # and 3,024 observations. Do not mount its N-Triples serialization as well.
+      - ../../trabajogrupal/Curso2026-2027/HandsOn/Group04/rdf/airquality-with-links.ttl:/data/airquality.ttl:ro
+    command: ["--file=/data/airquality.ttl", "/breathemadrid"]

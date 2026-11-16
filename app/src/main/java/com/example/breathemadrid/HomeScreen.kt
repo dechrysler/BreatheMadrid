@@ -56,6 +56,7 @@ internal fun HomeScreen(
     onActivitySelected: (OutdoorActivity) -> Unit,
     onOpenMap: () -> Unit,
     onInfo: () -> Unit,
+    onKnowledgeGraph: () -> Unit,
     onStationSelected: (String) -> Unit
 ) {
     var zonesOpen by remember { mutableStateOf(false) }
@@ -87,6 +88,7 @@ internal fun HomeScreen(
         ) {
             item {
                 Text("BreatheMadrid", color = Ink, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                TextButton(onClick = onKnowledgeGraph) { Text("Datos semánticos · SPARQL") }
             }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
