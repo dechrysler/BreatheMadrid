@@ -28,7 +28,7 @@ private const val EmulatorEndpoint = "http://127.0.0.1:3030/breathemadrid/sparql
 private val sections = listOf("Estaciones", "Análisis", "Comparar", "Enlaces")
 
 @Composable
-internal fun KnowledgeGraphScreen(onBack: () -> Unit) {
+internal fun KnowledgeGraphScreen(targetStationCode: String? = null, onBack: () -> Unit) {
     var endpoint by remember { mutableStateOf(EmulatorEndpoint) }
     var loading by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<GraphResult?>(null) }
@@ -37,6 +37,15 @@ internal fun KnowledgeGraphScreen(onBack: () -> Unit) {
     var showQueries by remember { mutableStateOf(false) }
     var showEndpoint by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(targetStationCode) {
+        if (targetStationCode != null) {
+            loading = true; error = null; result = null
+            try { result = SparqlClient(endpoint).load() }
+            catch (exception: Exception) { error = exception.message ?: "Error desconocido" }
+            finally { loading = false }
+        }
+    }
 
     Column(Modifier.fillMaxSize().background(HomeBackground).safeDrawingPadding()) {
         Row(Modifier.fillMaxWidth().background(Accent).padding(horizontal = 8.dp),
@@ -68,6 +77,10 @@ internal fun KnowledgeGraphScreen(onBack: () -> Unit) {
         error?.let { Text("No se pudo consultar el grafo: $it",
             color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp)) }
         result?.let { graph ->
+            if (targetStationCode != null && graph.stations.none { it.code == targetStationCode }) {
+                Text("La estación seleccionada no tiene correspondencia en el grafo RDF.",
+                    color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
+            }
             Text("${graph.summary.stations} estaciones · ${graph.summary.pollutants} contaminantes · ${graph.summary.observations} observaciones",
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
@@ -79,7 +92,7 @@ internal fun KnowledgeGraphScreen(onBack: () -> Unit) {
                 }
             }
             when (section) {
-                0 -> StationExplorer(graph, endpoint)
+                0 -> StationExplorer(graph, endpoint, targetStationCode)
                 1 -> AnalysisExplorer(graph, endpoint)
                 2 -> CompareExplorer(graph, endpoint)
                 else -> LinkExplorer(endpoint)
@@ -95,7 +108,7 @@ internal fun KnowledgeGraphScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun StationExplorer(graph: GraphResult, endpoint: String) {
+private fun StationExplorer(graph: GraphResult, endpoint: String, targetStationCode: String?) {
     var search by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("Todos") }
     var byCount by remember { mutableStateOf(false) }
@@ -106,6 +119,15 @@ private fun StationExplorer(graph: GraphResult, endpoint: String) {
     var showQuery by remember { mutableStateOf(false) }
     val counts = remember(graph) { graph.validObservationsByStation.associate { it.uri to it.total } }
     val scope = rememberCoroutineScope()
+    LaunchedEffect(graph, targetStationCode) {
+        val station = graph.stations.singleOrNull { it.code == targetStationCode }
+        if (station != null) {
+            selected = station; detail = null; error = null; loading = true
+            try { detail = SparqlClient(endpoint).stationDetail(station) }
+            catch (exception: Exception) { error = exception.message ?: "No se pudo cargar el detalle." }
+            finally { loading = false }
+        }
+    }
     val filtered = remember(graph, search, type, byCount) {
         graph.stations.filter { it.name.contains(search, ignoreCase = true) &&
             (type == "Todos" || it.category == type) }

@@ -6,6 +6,8 @@ La pantalla **Datos semánticos** envía consultas HTTP POST a Apache Jena Fusek
 
 Inicio, Mapa, Detalle y Recomendaciones siguen leyendo `stations.json` y `hourly-readings.json` incluidos en Android. Son una instantánea histórica del 1 de octubre de 2026: 23 estaciones con registros y 2.203 lecturas válidas. El RDF completo tiene 24 estaciones, 11 contaminantes y 3.024 observaciones, también las inválidas. La pantalla semántica nunca sustituye una respuesta fallida por datos JSON locales.
 
+En el mapa, **Analizar datos RDF** abre directamente el detalle semántico de la estación elegida. El `id` corto del JSON (por ejemplo, `16`) se convierte en el código oficial (`28079016`); la consulta SPARQL devuelve ese código junto con la URI RDF (`http://breathemadrid.es/resource/station/arturo-soria`). Se comprobó que las 23 estaciones del mapa tienen correspondencia única en el grafo. Si falta una correspondencia, el explorador lo indica sin elegir otra estación. La pantalla de destino consulta Fuseki y el botón de volver regresa al mapa.
+
 ## Iniciar Fuseki y actualizar los datos
 
 Se necesita Docker Desktop con el motor Linux activo. Desde la raíz de BreatheMadrid, ejecutar:

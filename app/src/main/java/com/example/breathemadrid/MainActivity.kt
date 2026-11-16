@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
                 var showMap by rememberSaveable { mutableStateOf(false) }
                 var showInfo by rememberSaveable { mutableStateOf(false) }
                 var showKnowledgeGraph by rememberSaveable { mutableStateOf(false) }
+                var targetStationCode by rememberSaveable { mutableStateOf<String?>(null) }
                 var selected by rememberSaveable { mutableStateOf("4") }
                 var zoneId by rememberSaveable { mutableStateOf("49") }
                 var homeStationId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -39,14 +40,17 @@ class MainActivity : ComponentActivity() {
                 val reference = location ?: MapPoint(zone.lat, zone.lon)
                 BackHandler(enabled = showInfo || showKnowledgeGraph || showMap || detailStation != null) {
                     when {
-                        showKnowledgeGraph -> showKnowledgeGraph = false
+                        showKnowledgeGraph -> { showKnowledgeGraph = false; targetStationCode = null }
                         showInfo -> showInfo = false
                         detailId != null -> detailId = null
                         else -> showMap = false
                     }
                 }
                 if (showKnowledgeGraph) {
-                    KnowledgeGraphScreen { showKnowledgeGraph = false }
+                    KnowledgeGraphScreen(targetStationCode) {
+                        showKnowledgeGraph = false
+                        targetStationCode = null
+                    }
                 } else if (showInfo) {
                     InformationScreen(snapshot.date) { showInfo = false }
                 } else if (detailStation != null) {
@@ -57,7 +61,10 @@ class MainActivity : ComponentActivity() {
                             location = it
                             homeStationId = null
                             showMap = false
-                        }, onInfo = { showInfo = true }) { id, code ->
+                        }, onInfo = { showInfo = true }, onAnalyzeRdf = { id ->
+                            targetStationCode = officialStationCode(id) ?: id
+                            showKnowledgeGraph = true
+                        }) { id, code ->
                             selected = id
                             detailPollutant = code
                             detailId = id
@@ -72,7 +79,10 @@ class MainActivity : ComponentActivity() {
                         }, { activity = it }, {
                             selected = snapshot.stations.minBy { reference.distanceTo(it) }.id
                             showMap = true
-                        }, onInfo = { showInfo = true }, onKnowledgeGraph = { showKnowledgeGraph = true }) { id ->
+                        }, onInfo = { showInfo = true }, onKnowledgeGraph = {
+                            targetStationCode = null
+                            showKnowledgeGraph = true
+                        }) { id ->
                             zoneId = id
                             location = null
                             homeStationId = id

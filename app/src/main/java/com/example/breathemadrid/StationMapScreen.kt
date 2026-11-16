@@ -56,6 +56,7 @@ internal fun StationMapScreen(
     onHome: () -> Unit,
     onLocationSelected: (MapPoint) -> Unit,
     onInfo: () -> Unit,
+    onAnalyzeRdf: (String) -> Unit,
     onDetails: (String, String) -> Unit
 ) {
     var pollutant by rememberSaveable { mutableStateOf(Pollutant.ALL) }
@@ -190,6 +191,7 @@ internal fun StationMapScreen(
                     MapAction("Ver detalle de la estación") {
                         onDetails(station.id, pollutant.code ?: "14")
                     }
+                    MapAction("Analizar datos RDF") { onAnalyzeRdf(station.id) }
                 }
                 Text("Toca el mapa para elegir una ubicación.", style = MaterialTheme.typography.bodySmall, color = Muted)
             }

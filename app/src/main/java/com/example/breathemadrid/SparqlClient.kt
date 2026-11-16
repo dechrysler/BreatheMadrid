@@ -9,7 +9,10 @@ import java.net.URL
 import java.net.URLEncoder
 
 internal data class GraphSummary(val stations: Int, val pollutants: Int, val observations: Int)
-internal data class GraphStation(val uri: String, val name: String, val category: String)
+internal data class GraphStation(val uri: String, val code: String, val name: String, val category: String)
+
+internal fun officialStationCode(mapId: String): String? =
+    mapId.toIntOrNull()?.takeIf { it in 1..999 }?.let { "28079${it.toString().padStart(3, '0')}" }
 internal data class GraphPollutant(val uri: String, val name: String, val unit: String?)
 internal data class StationDetail(
     val station: GraphStation, val latitude: Double?, val longitude: Double?,
@@ -50,13 +53,14 @@ internal object GraphQueries {
 
     const val stations = """
         PREFIX bm: <http://breathemadrid.es/ontology#>
-        SELECT ?station ?name ?type WHERE {
+        SELECT ?station ?code ?name ?type WHERE {
           VALUES ?type {
             bm:UrbanTrafficStation
             bm:UrbanBackgroundStation
             bm:SuburbanStation
           }
           ?station a bm:Station, ?type ;
+                   bm:stationCode ?code ;
                    bm:stationName ?name .
         }
         ORDER BY ?name
@@ -157,7 +161,7 @@ internal class SparqlClient(private val endpoint: String) {
         )
         val stations = bindings(GraphQueries.stations).map { row ->
             val type = row.value("type").substringAfterLast('#')
-            GraphStation(row.value("station"), row.value("name"), when (type) {
+            GraphStation(row.value("station"), row.value("code"), row.value("name"), when (type) {
                 "UrbanTrafficStation" -> "Urbana de tráfico"
                 "UrbanBackgroundStation" -> "Urbana de fondo"
                 "SuburbanStation" -> "Suburbana"

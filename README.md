@@ -8,6 +8,15 @@ Aplicación Android en Kotlin y Jetpack Compose para explorar las mediciones de 
 
 Abre esta carpeta como proyecto en Android Studio, sincroniza Gradle y ejecuta el módulo `app` en un dispositivo o emulador con Android 12 (API 31) o posterior. El proyecto compila con el SDK 37. El mapa base utiliza una conexión a Internet.
 
+Para usar **Datos semánticos** y el botón **Analizar datos RDF** del mapa, necesitas Docker Desktop y el RDF del grupo en la ruta hermana indicada en `compose.yaml`. Desde la raíz de este proyecto, inicia Fuseki y comprueba la conexión:
+
+```powershell
+docker compose up -d --build
+.\scripts\demo-check.ps1
+```
+
+Arranca antes el emulador o conecta el móvil por USB para que `demo-check.ps1` configure `adb reverse tcp:3030 tcp:3030`. Después ejecuta `app` desde Android Studio. En **Mapa**, selecciona una estación y pulsa **Analizar datos RDF** para abrir su detalle consultado mediante SPARQL. También puedes entrar desde **Inicio → Datos semánticos · SPARQL → Consultar el grafo**. Si reinicias el emulador, vuelve a ejecutar `demo-check.ps1` para restablecer el túnel. Más detalles y opciones para un móvil por Wi-Fi: [documentación de integración](docs/SPARQL_ANDROID_INTEGRATION.md).
+
 ## Fuentes
 
 - Ayuntamiento de Madrid, Dirección General de Sostenibilidad y Control Ambiental. [Estaciones de control](https://datos.madrid.es/dataset/212629-0-estaciones-control-aire) y [mediciones de calidad del aire](https://datos.madrid.es/dataset/212531-0-calidad-aire-tiempo-real), bajo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Group04 normalizó los registros. La app incorpora las observaciones horarias válidas y una selección de las últimas lecturas en JSON.
