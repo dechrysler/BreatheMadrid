@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
                 val snapshot = rememberAirSnapshot()
                 var showMap by rememberSaveable { mutableStateOf(false) }
                 var showInfo by rememberSaveable { mutableStateOf(false) }
+                var showKnowledgeGraph by rememberSaveable { mutableStateOf(false) }
                 var selected by rememberSaveable { mutableStateOf("4") }
                 var zoneId by rememberSaveable { mutableStateOf("49") }
                 var homeStationId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -36,14 +37,17 @@ class MainActivity : ComponentActivity() {
                 val detailStation = snapshot.stations.firstOrNull { it.id == detailId }
                 val zone = snapshot.stations.firstOrNull { it.id == zoneId } ?: snapshot.stations.first()
                 val reference = location ?: MapPoint(zone.lat, zone.lon)
-                BackHandler(enabled = showInfo || showMap || detailStation != null) {
+                BackHandler(enabled = showInfo || showKnowledgeGraph || showMap || detailStation != null) {
                     when {
+                        showKnowledgeGraph -> showKnowledgeGraph = false
                         showInfo -> showInfo = false
                         detailId != null -> detailId = null
                         else -> showMap = false
                     }
                 }
-                if (showInfo) {
+                if (showKnowledgeGraph) {
+                    KnowledgeGraphScreen { showKnowledgeGraph = false }
+                } else if (showInfo) {
                     InformationScreen(snapshot.date) { showInfo = false }
                 } else if (detailStation != null) {
                     StationDetailScreen(detailStation, snapshot.date, detailPollutant) { detailId = null }
@@ -68,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         }, { activity = it }, {
                             selected = snapshot.stations.minBy { reference.distanceTo(it) }.id
                             showMap = true
-                        }, onInfo = { showInfo = true }) { id ->
+                        }, onInfo = { showInfo = true }, onKnowledgeGraph = { showKnowledgeGraph = true }) { id ->
                             zoneId = id
                             location = null
                             homeStationId = id

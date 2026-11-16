@@ -1,5 +1,7 @@
 # BreatheMadrid
 
+La pantalla **Datos semánticos** consulta el RDF del grupo mediante Apache Jena Fuseki y SPARQL. Instrucciones para iniciar el servidor, ejecutar Android y hacer la demo: [docs/SPARQL_ANDROID_INTEGRATION.md](docs/SPARQL_ANDROID_INTEGRATION.md).
+
 Aplicación Android en Kotlin y Jetpack Compose para explorar las mediciones de calidad del aire de Madrid. Incluye una pantalla de inicio, un mapa con 23 estaciones con registros y fichas con gráficos horarios. Las lecturas incorporadas corresponden al 1 de octubre de 2026.
 
 ## Ejecutar
